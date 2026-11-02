@@ -108,36 +108,46 @@ function showToast(message) {
   toastTimeout = setTimeout(() => toast.classList.remove("show"), 2300);
 }
 
+/** 戦闘中のキャラクターカードには設定入力を置かない。 */
 function cardTemplate(name, i) {
   return `<article class="character" data-character="${i}">
-    <header class="character-header"><h3>${name}</h3><span class="character-index">0${i+1} / 04</span></header>
+    <header class="character-header">
+      <h3>${name}</h3><span class="character-index">0${i + 1} / 04</span>
+    </header>
     <div class="character-body">
-      <label class="initial-label" for="initial-${i}">初期守備力</label>
-      <input class="initial-defense" type="number" inputmode="numeric" min="0" max="9999" step="1" id="initial-${i}" data-initial="${i}" placeholder="数値を入力" aria-label="${name}の初期守備力">
-      <div class="half-defense" id="half-${i}">初期守備力 / 2：—</div>
-      <div class="metric-area">
-        <div class="metric gain-metric" id="gain-box-${i}"><small>上昇量</small><strong id="gain-${i}">0</strong></div>
+      <div class="gain-label">上昇量</div>
+      <div class="metric gain-metric" id="gain-box-${i}">
+        <small>初期値からの変化</small><strong id="gain-${i}">0</strong>
       </div>
-      <div class="gain-limit"><span>下限 −初期守備力</span><strong id="min-gain-${i}">—</strong></div>
-      <div class="damage-box"><span>通常攻撃・最大ダメージ</span><strong id="damage-${i}">—</strong></div>
+      <div class="damage-box">
+        <span>通常攻撃・最大ダメージ</span><strong id="damage-${i}">—</strong>
+      </div>
       <div class="spell-grid">
         <button class="btn spell-lucanan" type="button" data-action="lucanan" data-index="${i}">ルカナン</button>
         <button class="btn spell-scala" type="button" data-action="scala" data-index="${i}">スカラ</button>
         <button class="btn spell-reset" type="button" data-action="reset" data-index="${i}">リセット</button>
       </div>
-      <div class="current-defense-footer" aria-label="${name}の現在守備力">
-        <span>現在守備力</span><strong id="defense-${i}">—</strong>
-      </div>
     </div>
   </article>`;
 }
 
+/** 初期守備力は画面下部の事前設定に集約する。 */
+function initialInputTemplate(name, i) {
+  return `<div class="initial-field">
+    <label for="initial-${i}">${name}</label>
+    <input class="initial-defense" type="number" inputmode="numeric" min="0" max="9999" step="1"
+      id="initial-${i}" data-initial="${i}" placeholder="数値を入力" aria-label="${name}の初期守備力">
+    <div class="half-defense" id="half-${i}">初期守備力 / 2：—</div>
+  </div>`;
+}
+
 function buildCards() {
   document.getElementById("party-cards").innerHTML = PARTY_NAMES.map(cardTemplate).join("");
+  document.getElementById("initial-inputs").innerHTML = PARTY_NAMES.map(initialInputTemplate).join("");
   PARTY_NAMES.forEach((_, i) => {
     const input = document.getElementById(`initial-${i}`);
     input.value = state.initial[i] ?? "";
-    // 変更途中の空欄を許可して、入力のたびに表示を更新。
+    // 入力を変更したら、画面上部のダメージを即時更新する。
     input.addEventListener("input", () => {
       const initial = integerOrNull(input.value);
       if (input.value !== "" && initial === null) {
@@ -169,8 +179,6 @@ function render() {
     document.getElementById(`half-${i}`).textContent =
       `初期守備力 / 2：${enabled ? Math.floor(initial / 2) : "—"}`;
     document.getElementById(`gain-${i}`).textContent = gain > 0 ? `+${gain}` : `${gain}`;
-    document.getElementById(`defense-${i}`).textContent = enabled ? current : "—";
-    document.getElementById(`min-gain-${i}`).textContent = enabled ? `−${initial}` : "—";
     document.getElementById(`damage-${i}`).textContent =
       enabled ? damage(state.attack, current, state.buff) : "—";
     const box = document.getElementById(`gain-box-${i}`);
