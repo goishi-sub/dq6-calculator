@@ -1,6 +1,6 @@
 "use strict";
 
-/** DQ6 守備力計算 — Google スプレッドシート v4 の計算ルールを移植。 */
+/** DQ6 守備力計算 — 初期守備力基準のバフとSFC版通常攻撃の最大ダメージ。 */
 const STORAGE_KEY = "dq6-defense-calculator-state-v1";
 const PARTY_NAMES = ["ドランゴ", "ハッサン", "テリー", "チャモロ"];
 const DEFAULT_ATTACK = 410;
@@ -29,9 +29,41 @@ function nextGain(gain, initial, action) {
   return clampGain(gain + delta, initial);
 }
 
+/**
+ * SFC版DQ6・通常攻撃の最大ダメージ（会心・痛恨などは対象外）。
+ * 攻略解析サイトの3分岐と、DQ6 RTA資料の通常域の乱数幅を組み合わせる。
+ * 整数除算のたびに小数点以下を切り捨てる。
+ *
+ *  A = 攻撃力、B = 現在守備力
+ *  X = A - floor(B / 2), D = floor(X / 2)
+ *  (1) X <= 1                        : 0～1       → 最大1
+ *  (2) D <= floor(A / 16)           : 0～A/16    → 最大floor(A/16)
+ *  (3) その他                       : D ± (floor(D/16)+1)
+ *  バイキルトは最終的な通常攻撃ダメージに2倍を適用する。
+ *
+ * 注：公開資料の整数丸め順とROMの内部処理が完全一致するかは未実機検証。
+ * 解析: https://gcgx.games/dq6/damage.html
+ * RTA資料: https://game.kuneo.org/dq6/20140108_dq6rta_kuneo.pdf
+ */
 function damage(attack, currentDefense, buff) {
-  // スプレッドシートの ROUNDDOWN( ..., 0) と同様、0方向に切り捨てる。
-  return Math.trunc((attack / 2 - currentDefense / 4) * (buff ? 2 : 1));
+  const a = Math.max(0, Math.trunc(attack));
+  const b = Math.max(0, Math.trunc(currentDefense));
+  const x = a - Math.floor(b / 2);
+  let maximum;
+
+  if (x <= 1) {
+    maximum = 1;
+  } else {
+    const base = Math.floor(x / 2);
+    const weakAttackLimit = Math.floor(a / 16);
+    if (base <= weakAttackLimit) {
+      maximum = weakAttackLimit;
+    } else {
+      const randomWidth = Math.floor(base / 16) + 1;
+      maximum = base + randomWidth;
+    }
+  }
+  return maximum * (buff ? 2 : 1);
 }
 
 function integerOrNull(value) {
@@ -85,14 +117,16 @@ function cardTemplate(name, i) {
       <div class="half-defense" id="half-${i}">初期守備力 / 2：—</div>
       <div class="metric-area">
         <div class="metric gain-metric" id="gain-box-${i}"><small>上昇量</small><strong id="gain-${i}">0</strong></div>
-        <div class="metric"><small>現在守備力</small><strong id="defense-${i}">—</strong></div>
       </div>
-      <div class="current-defense"><span>下限 −初期守備力</span><strong id="min-gain-${i}">—</strong></div>
-      <div class="damage-box"><span>通常攻撃ダメージ</span><strong id="damage-${i}">—</strong></div>
+      <div class="gain-limit"><span>下限 −初期守備力</span><strong id="min-gain-${i}">—</strong></div>
+      <div class="damage-box"><span>通常攻撃・最大ダメージ</span><strong id="damage-${i}">—</strong></div>
       <div class="spell-grid">
         <button class="btn spell-lucanan" type="button" data-action="lucanan" data-index="${i}">ルカナン</button>
         <button class="btn spell-scala" type="button" data-action="scala" data-index="${i}">スカラ</button>
         <button class="btn spell-reset" type="button" data-action="reset" data-index="${i}">リセット</button>
+      </div>
+      <div class="current-defense-footer" aria-label="${name}の現在守備力">
+        <span>現在守備力</span><strong id="defense-${i}">—</strong>
       </div>
     </div>
   </article>`;
@@ -223,10 +257,13 @@ function registerOffline() {
   }
 }
 
-buildCards();
-connectActions();
-render();
-registerOffline();
+// Node.js による計算テストでもブラウザDOMなしで読み込めるようにする。
+if (typeof document !== "undefined") {
+  buildCards();
+  connectActions();
+  render();
+  registerOffline();
+}
 
 // テスト用：ブラウザ公開を必要としない純粋関数を検証できる。
 if (typeof module !== "undefined" && module.exports) {

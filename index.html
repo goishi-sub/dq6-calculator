@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="DQ6守備力">
-  <meta name="description" content="DQ6 デスタムーア第2形態の守備力変化と通常攻撃ダメージ計算。">
+  <meta name="description" content="DQ6 デスタムーア第2形態の守備力変化と通常攻撃の最大ダメージ計算。">
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
@@ -83,7 +83,10 @@
           <div class="notes-content">
             <p><strong>上昇量：</strong>初期値0、下限−初期守備力、上限+200。守備力の最低値は0。</p>
             <p><strong>ルカナン：</strong>初期守備力÷4を切り捨てて減算。<strong>スカラ：</strong>初期守備力÷2を切り捨てて加算。<strong>スクルト：</strong>初期守備力÷4を切り捨てて全員に加算。</p>
-            <p><strong>現在守備力：</strong>初期守備力＋上昇量。<strong>通常攻撃ダメージ：</strong>（攻撃力÷2−現在守備力÷4）×（バイキルトありなら2、なしなら1）を小数点以下切り捨て。</p>
+            <p><strong>現在守備力：</strong>初期守備力＋上昇量（最低0）。各キャラクターカード下部に表示。</p>
+            <p><strong>通常攻撃の最大ダメージ：</strong>A＝敵の攻撃力、B＝現在守備力、X＝A−⌊B/2⌋、D＝⌊X/2⌋。① X≦1のとき最大1。② D≦⌊A/16⌋のとき最大⌊A/16⌋。③ それ以外は最大D＋⌊D/16⌋＋1。端数は各整数除算で切り捨て。</p>
+            <p><strong>バイキルト：</strong>通常攻撃の最大ダメージを算出した後で2倍。痛恨・特殊行動・防御・耐性補正は対象外。</p>
+            <p><strong>計算資料：</strong><a href="https://gcgx.games/dq6/damage.html" target="_blank" rel="noopener noreferrer">SFC版DQ6 通常攻撃の3分岐</a> ／ <a href="https://game.kuneo.org/dq6/20140108_dq6rta_kuneo.pdf" target="_blank" rel="noopener noreferrer">DQ6 RTA資料（通常範囲の乱数幅）</a>。公開資料をもとに実装しており、ROM上の細かな整数処理との完全一致は未検証です。</p>
             <p><strong>全設定リセット：</strong>初期守備力は保持し、全員の上昇量を0、攻撃力を410、バイキルトを「なし」に戻す。各キャラのリセットと全体の上昇量リセットでは攻撃力・バイキルトは保持。</p>
             <p>入力内容はこの端末のブラウザ内に保存されます。データ削除やブラウザ設定により消える場合があります。</p>
           </div>

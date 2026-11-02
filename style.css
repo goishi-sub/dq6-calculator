@@ -49,16 +49,19 @@ h1,h2,p {margin-top:0} h1 {margin-bottom:0;font-size:25px;letter-spacing:.01em}h
 .initial-defense {border:1px solid #e6cf90;background:var(--input-bg);border-radius:10px;padding:10px 12px;width:100%;font-size:20px;font-weight:800;color:var(--ink);height:48px;font-variant-numeric:tabular-nums}
 .initial-defense::placeholder {font-size:13px;font-weight:500;color:#a48c54}
 .half-defense {color:var(--muted);font-size:11px;margin:7px 0 14px;min-height:17px}
-.metric-area {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}
+.metric-area {display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:13px}
 .metric {background:#f3f6fa;border:1px solid #e7ecf3;border-radius:10px;text-align:center;padding:10px 4px 9px;min-width:0}
 .metric small {display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:7px}
 .metric strong {font-size:26px;line-height:1.1;display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
 .metric.gain-positive {background:var(--green-bg);border-color:#c9edda}.metric.gain-positive strong {color:var(--green)}
 .metric.gain-negative {background:var(--red-bg);border-color:#f6d8de}.metric.gain-negative strong {color:var(--red)}
-.current-defense {font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px;padding:0 2px 11px}
-.current-defense strong {color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+.gain-limit {font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px;padding:0 2px 11px}
+.gain-limit strong {color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+.current-defense-footer {display:flex;justify-content:space-between;align-items:center;gap:10px;background:#edf2fa;border:1px solid #dce5f2;border-radius:11px;margin-top:14px;padding:12px 14px;color:#566c89}
+.current-defense-footer span {font-size:12px;font-weight:800}
+.current-defense-footer strong {font-size:26px;line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
 .damage-box {display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--green-bg);border-radius:11px;padding:12px;margin-bottom:15px;color:var(--green)}
-.damage-box span {font-size:12px;font-weight:800}.damage-box strong {font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.damage-box span {font-size:11px;font-weight:800}.damage-box strong {font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
 .spell-grid {display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .spell-grid .btn {padding:12px 5px;min-height:48px;font-size:13px}
 .spell-lucanan {background:var(--orange-bg);color:var(--orange);border-color:#f6dac0}
