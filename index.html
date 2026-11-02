@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111b31">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="DQ6守備力">
+  <meta name="description" content="DQ6 デスタムーア第2形態の守備力変化と通常攻撃ダメージ計算。">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+  <title>DQ6 守備力計算</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">VI</div>
+        <div>
+          <p class="eyebrow">DRAGON QUEST VI · BATTLE TOOL</p>
+          <h1>守備力・ダメージ計算</h1>
+        </div>
+      </div>
+      <button id="reset-all-settings" class="btn btn-reset-app" type="button" aria-label="初期守備力以外の設定をすべてリセット">
+        <span aria-hidden="true">↺</span> 全設定リセット
+      </button>
+    </header>
+
+    <main>
+      <section class="control-bar" aria-label="戦闘設定">
+        <div class="setting-block attack-block">
+          <label for="attack-value">敵の攻撃力</label>
+          <div class="attack-field">
+            <input id="attack-value" type="number" min="0" max="9999" step="1" value="410" inputmode="numeric" aria-label="敵の攻撃力">
+            <span class="setting-note">デスタムーア第2形態 · 初期値 410</span>
+          </div>
+        </div>
+        <div class="setting-block buff-block">
+          <span class="setting-label" id="buff-label">バイキルト</span>
+          <div class="segmented" role="group" aria-labelledby="buff-label">
+            <button type="button" class="segment selected" id="buff-off" aria-pressed="true">なし</button>
+            <button type="button" class="segment" id="buff-on" aria-pressed="false">あり <span class="tiny">×2</span></button>
+          </div>
+        </div>
+        <div class="setting-block bounds-block">
+          <span class="setting-label">上昇量の範囲</span>
+          <div class="bounds-value">−初期守備力 <span>〜</span> +200</div>
+          <span class="setting-note">加減算は初期守備力を基準</span>
+        </div>
+      </section>
+
+      <section class="party-section" aria-labelledby="party-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PARTY STATUS</p>
+            <h2 id="party-heading">キャラクター別</h2>
+          </div>
+          <p class="section-note">黄色の入力欄に初期守備力を入力してください</p>
+        </div>
+        <div id="party-cards" class="party-grid" aria-label="キャラクターの守備力・ダメージ"></div>
+      </section>
+
+      <section class="party-actions" aria-label="全員に実行する操作">
+        <div class="party-actions-text">
+          <p class="eyebrow">PARTY ACTIONS</p>
+          <h2>全体操作</h2>
+          <span>全員の上昇量をまとめて変更</span>
+        </div>
+        <div class="party-actions-buttons">
+          <button type="button" class="btn spell-lucanan" data-party-action="lucanan">ルカナン <span>全員 −1/4</span></button>
+          <button type="button" class="btn spell-scrult" data-party-action="scrult">スクルト <span>全員 +1/4</span></button>
+          <button type="button" class="btn spell-reset" data-party-action="reset">上昇量リセット <span>全員を0に</span></button>
+        </div>
+      </section>
+
+      <section class="notes" aria-label="計算方法">
+        <details>
+          <summary>計算式・操作ルールを確認 <span aria-hidden="true">＋</span></summary>
+          <div class="notes-content">
+            <p><strong>上昇量：</strong>初期値0、下限−初期守備力、上限+200。守備力の最低値は0。</p>
+            <p><strong>ルカナン：</strong>初期守備力÷4を切り捨てて減算。<strong>スカラ：</strong>初期守備力÷2を切り捨てて加算。<strong>スクルト：</strong>初期守備力÷4を切り捨てて全員に加算。</p>
+            <p><strong>現在守備力：</strong>初期守備力＋上昇量。<strong>通常攻撃ダメージ：</strong>（攻撃力÷2−現在守備力÷4）×（バイキルトありなら2、なしなら1）を小数点以下切り捨て。</p>
+            <p><strong>全設定リセット：</strong>初期守備力は保持し、全員の上昇量を0、攻撃力を410、バイキルトを「なし」に戻す。各キャラのリセットと全体の上昇量リセットでは攻撃力・バイキルトは保持。</p>
+            <p>入力内容はこの端末のブラウザ内に保存されます。データ削除やブラウザ設定により消える場合があります。</p>
+          </div>
+        </details>
+      </section>
+    </main>
+    <footer class="footer">DQ6 守備力計算 · iPad対応Webアプリ · データはこの端末内に保存</footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
