@@ -119,7 +119,6 @@ function cardTemplate(name, i) {
       <h3>${name}</h3><span class="character-index">0${i + 1} / 04</span>
     </header>
     <div class="character-body">
-      <div class="gain-label">上昇量</div>
       <div class="metric gain-metric" id="gain-box-${i}">
         <small>初期値からの変化</small><strong id="gain-${i}">0</strong>
       </div>
@@ -287,10 +286,10 @@ function connectActions() {
     state.gains = [0,0,0,0];
     state.attack = DEFAULT_ATTACK;
     state.buff = false;
-    state.visible = [true, true, true, true];
+    // 表示/非表示の絞り込みと初期守備力はリセット対象外。
     attackInput.value = DEFAULT_ATTACK;
     saveState();render();
-    showToast("初期守備力を残し、表示設定も4人表示に戻しました");
+    showToast("データをリセットしました（表示設定・初期守備力は保持）");
   });
 }
 
