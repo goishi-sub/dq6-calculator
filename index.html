@@ -11,8 +11,8 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./style.css?v=3">
-  <script src="./app.js?v=3" defer></script>
+  <link rel="stylesheet" href="./style.css?v=4">
+  <script src="./app.js?v=4" defer></script>
   <title>DQ6 守備力計算</title>
 </head>
 <body>
@@ -36,7 +36,8 @@
           <div><p class="eyebrow">PARTY STATUS</p><h2 id="party-heading">キャラクター別</h2></div>
           <p class="section-note">上昇量と最大ダメージを確認・操作</p>
         </div>
-        <div id="party-cards" class="party-grid" aria-label="キャラクターの上昇量・最大ダメージ"></div>
+        <div id="party-cards" class="party-grid" data-visible-count="4" aria-label="キャラクターの上昇量・最大ダメージ"></div>
+        <p id="party-empty" class="party-empty" hidden>表示中のキャラクターがいません。画面下部の「キャラクター表示設定」から表示できます。</p>
       </section>
 
       <section class="party-actions action-bar" aria-label="全員に実行する操作">
@@ -72,6 +73,16 @@
           <h3 class="setup-panel-title">初期守備力 <span>4人分まとめて入力</span></h3>
           <div id="initial-inputs" class="initial-inputs"></div>
         </div>
+        <div class="setup-panel visibility-panel" aria-labelledby="visibility-heading">
+          <div class="visibility-heading-row">
+            <div>
+              <h3 class="setup-panel-title" id="visibility-heading">キャラクター表示設定</h3>
+              <p class="visibility-hint">タップすると上のカードの表示を切り替えます。非表示のキャラのデータは保持されます。</p>
+            </div>
+            <span class="visible-count" id="visible-count" aria-live="polite">4 / 4 人表示中</span>
+          </div>
+          <div id="visibility-toggles" class="visibility-toggles" role="group" aria-label="キャラクターの表示・非表示"></div>
+        </div>
       </section>
 
       <section class="notes" aria-label="計算方法">
@@ -84,7 +95,8 @@
             <p><strong>通常攻撃の最大ダメージ：</strong>A＝敵の攻撃力、B＝現在守備力、X＝A−⌊B/2⌋、D＝⌊X/2⌋。① X≦1のとき最大1。② D≦⌊A/16⌋のとき最大⌊A/16⌋。③ それ以外は最大D＋⌊D/16⌋＋1。整数除算では端数を切り捨て。</p>
             <p><strong>バイキルト：</strong>通常攻撃の最大ダメージを算出した後で2倍。痛恨・特殊行動・防御・耐性補正は対象外。</p>
             <p><strong>計算資料：</strong><a href="https://gcgx.games/dq6/damage.html" target="_blank" rel="noopener noreferrer">SFC版DQ6 通常攻撃の分岐</a> ／ <a href="https://game.kuneo.org/dq6/20140108_dq6rta_kuneo.pdf" target="_blank" rel="noopener noreferrer">DQ6 RTA資料（通常範囲の乱数幅）</a>。公開資料をもとに実装。ROM内部の丸め処理まで完全一致するかは実機未検証です。</p>
-            <p><strong>全設定リセット：</strong>初期守備力を保持し、全員の上昇量を0、敵の攻撃力を410、バイキルトを「なし」に戻します。個別リセット・全体の上昇量リセットでは攻撃力とバイキルトは変化しません。</p>
+            <p><strong>キャラクター表示設定：</strong>表示中の人数によってカードが横幅いっぱいに広がります。非表示中もデータを保持し、全体操作の効果は非表示中のキャラクターにも適用されます。4人とも非表示にすることもできます。</p>
+            <p><strong>全設定リセット：</strong>初期守備力を保持し、全員の上昇量を0、敵の攻撃力を410、バイキルトを「なし」、表示設定を4人表示に戻します。個別リセット・全体の上昇量リセットでは攻撃力とバイキルトは変化しません。</p>
             <p>入力した設定はこの端末のブラウザ内に保存されます。データ削除やブラウザ設定によって消えることがあります。</p>
           </div>
         </details>

@@ -9,7 +9,8 @@ const EMPTY_STATE = () => ({
   initial: [null, null, null, null],
   gains: [0, 0, 0, 0],
   attack: DEFAULT_ATTACK,
-  buff: false
+  buff: false,
+  visible: [true, true, true, true]
 });
 
 /** 下限 −初期守備力、上限 +200。初期守備力が未入力なら上昇量は0。 */
@@ -83,6 +84,9 @@ function loadState() {
         blank.initial[i]));
     blank.attack = integerOrNull(saved.attack) ?? DEFAULT_ATTACK;
     blank.buff = saved.buff === true;
+    // v3以前の保存データにはvisibleがない。初回は4人とも表示する。
+    blank.visible = PARTY_NAMES.map((_, i) =>
+      Array.isArray(saved.visible) ? saved.visible[i] !== false : true);
     return blank;
   } catch (error) {
     return blank;
@@ -110,7 +114,7 @@ function showToast(message) {
 
 /** 戦闘中のキャラクターカードには設定入力を置かない。 */
 function cardTemplate(name, i) {
-  return `<article class="character" data-character="${i}">
+  return `<article class="character" id="character-${i}" data-character="${i}">
     <header class="character-header">
       <h3>${name}</h3><span class="character-index">0${i + 1} / 04</span>
     </header>
@@ -141,9 +145,19 @@ function initialInputTemplate(name, i) {
   </div>`;
 }
 
+/** キャラクターの表示・非表示は画面下部から操作する。 */
+function visibilityToggleTemplate(name, i) {
+  return `<button class="visibility-toggle" type="button" data-visibility-index="${i}"
+    aria-controls="character-${i}" aria-pressed="true">
+    <span class="visibility-name">${name}</span>
+    <span class="visibility-status">表示中</span>
+  </button>`;
+}
+
 function buildCards() {
   document.getElementById("party-cards").innerHTML = PARTY_NAMES.map(cardTemplate).join("");
   document.getElementById("initial-inputs").innerHTML = PARTY_NAMES.map(initialInputTemplate).join("");
+  document.getElementById("visibility-toggles").innerHTML = PARTY_NAMES.map(visibilityToggleTemplate).join("");
   PARTY_NAMES.forEach((_, i) => {
     const input = document.getElementById(`initial-${i}`);
     input.value = state.initial[i] ?? "";
@@ -171,7 +185,20 @@ function buildCards() {
 }
 
 function render() {
+  const visibleCount = state.visible.filter(Boolean).length;
+  const grid = document.getElementById("party-cards");
+  grid.dataset.visibleCount = String(visibleCount);
+  document.getElementById("visible-count").textContent = `${visibleCount} / 4 人表示中`;
+  document.getElementById("party-empty").hidden = visibleCount !== 0;
   PARTY_NAMES.forEach((_, i) => {
+    // DOM要素は破棄しないため、非表示中の値やイベントも維持される。
+    document.getElementById(`character-${i}`).hidden = !state.visible[i];
+    const toggle = document.querySelector(`[data-visibility-index="${i}"]`);
+    toggle.classList.toggle("is-visible", state.visible[i]);
+    toggle.classList.toggle("is-hidden", !state.visible[i]);
+    toggle.setAttribute("aria-pressed", String(state.visible[i]));
+    toggle.querySelector(".visibility-status").textContent = state.visible[i] ? "表示中" : "非表示";
+    toggle.setAttribute("aria-label", `${PARTY_NAMES[i]}を${state.visible[i] ? "非表示にする" : "表示する"}`);
     const initial = state.initial[i];
     const gain = state.gains[i];
     const enabled = initial !== null;
@@ -215,6 +242,15 @@ function applyAction(action, indices) {
 }
 
 function connectActions() {
+  document.getElementById("visibility-toggles").addEventListener("click", e => {
+    const button = e.target.closest("button[data-visibility-index]");
+    if (!button) return;
+    const i = Number(button.dataset.visibilityIndex);
+    if (!Number.isInteger(i) || i < 0 || i >= PARTY_NAMES.length) return;
+    state.visible[i] = !state.visible[i];
+    saveState();
+    render();
+  });
   document.getElementById("party-cards").addEventListener("click", e => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
@@ -251,9 +287,10 @@ function connectActions() {
     state.gains = [0,0,0,0];
     state.attack = DEFAULT_ATTACK;
     state.buff = false;
+    state.visible = [true, true, true, true];
     attackInput.value = DEFAULT_ATTACK;
     saveState();render();
-    showToast("初期守備力を残して、すべて初期値に戻しました");
+    showToast("初期守備力を残し、表示設定も4人表示に戻しました");
   });
 }
 

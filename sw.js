@@ -1,7 +1,7 @@
 /* GitHub Pages のサブディレクトリにも対応する相対パス式のオフラインキャッシュ。 */
-const CACHE_NAME = 'dq6-defense-pwa-v3';
+const CACHE_NAME = 'dq6-defense-pwa-v4';
 const ASSETS = [
-  './', './index.html', './style.css?v=3', './app.js?v=3', './manifest.json',
+  './', './index.html', './style.css?v=4', './app.js?v=4', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'
 ];
 
