@@ -7,6 +7,7 @@ const DEFAULT_ATTACK = 410;
 const MAX_GAIN = 200;
 const EMPTY_STATE = () => ({
   initial: [null, null, null, null],
+  maxHp: [null, null, null, null],
   gains: [0, 0, 0, 0],
   attack: DEFAULT_ATTACK,
   buff: false,
@@ -73,12 +74,21 @@ function integerOrNull(value) {
   return Number.isInteger(n) && n >= 0 && n <= 9999 ? n : null;
 }
 
+/** 最大HPは未入力、または1〜9999の整数のみ有効。 */
+function hpOrNull(value) {
+  const n = integerOrNull(value);
+  return n !== null && n >= 1 ? n : null;
+}
+
 function loadState() {
   const blank = EMPTY_STATE();
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
     if (!saved || !Array.isArray(saved.initial) || !Array.isArray(saved.gains)) return blank;
     blank.initial = PARTY_NAMES.map((_, i) => integerOrNull(saved.initial[i]));
+    // v6以前の保存データにはmaxHpがない。空欄として移行する。
+    blank.maxHp = PARTY_NAMES.map((_, i) =>
+      Array.isArray(saved.maxHp) ? hpOrNull(saved.maxHp[i]) : null);
     blank.gains = PARTY_NAMES.map((_, i) =>
       clampGain(Number.isFinite(Number(saved.gains[i])) ? Number(saved.gains[i]) : 0,
         blank.initial[i]));
@@ -148,6 +158,15 @@ function initialInputTemplate(name, i) {
   </div>`;
 }
 
+/** 最大HPは初期守備力のすぐ下の事前設定に配置する。 */
+function maxHpInputTemplate(name, i) {
+  return `<div class="initial-field hp-field">
+    <label for="max-hp-${i}">${name}</label>
+    <input class="maximum-hp" type="number" inputmode="numeric" min="1" max="9999" step="1"
+      id="max-hp-${i}" data-max-hp="${i}" placeholder="未入力" aria-label="${name}の最大HP">
+  </div>`;
+}
+
 /** キャラクターの表示・非表示は画面下部から操作する。 */
 function visibilityToggleTemplate(name, i) {
   return `<button class="visibility-toggle" type="button" data-visibility-index="${i}"
@@ -161,6 +180,7 @@ function buildCards() {
   document.getElementById("party-cards").innerHTML = PARTY_NAMES.map(cardTemplate).join("");
   document.getElementById("damage-grid").innerHTML = PARTY_NAMES.map(damageTemplate).join("");
   document.getElementById("initial-inputs").innerHTML = PARTY_NAMES.map(initialInputTemplate).join("");
+  document.getElementById("max-hp-inputs").innerHTML = PARTY_NAMES.map(maxHpInputTemplate).join("");
   document.getElementById("visibility-toggles").innerHTML = PARTY_NAMES.map(visibilityToggleTemplate).join("");
   PARTY_NAMES.forEach((_, i) => {
     const input = document.getElementById(`initial-${i}`);
@@ -183,6 +203,27 @@ function buildCards() {
         input.value = state.initial[i] ?? "";
         input.setCustomValidity("");
         showToast("初期守備力は0～9999の整数で入力してください");
+      }
+    });
+
+    const hpInput = document.getElementById(`max-hp-${i}`);
+    hpInput.value = state.maxHp[i] ?? "";
+    hpInput.addEventListener("input", () => {
+      const hp = hpOrNull(hpInput.value);
+      if (hpInput.value !== "" && hp === null) {
+        hpInput.setCustomValidity("最大HPは1～9999の整数で入力してください。");
+        return;
+      }
+      hpInput.setCustomValidity("");
+      state.maxHp[i] = hp;
+      saveState();
+      render();
+    });
+    hpInput.addEventListener("change", () => {
+      if (hpInput.value !== "" && hpOrNull(hpInput.value) === null) {
+        hpInput.value = state.maxHp[i] ?? "";
+        hpInput.setCustomValidity("");
+        showToast("最大HPは1～9999の整数で入力してください");
       }
     });
   });
@@ -214,8 +255,14 @@ function render() {
     document.getElementById(`half-${i}`).textContent =
       `初期守備力 / 2：${enabled ? Math.floor(initial / 2) : "—"}`;
     document.getElementById(`gain-${i}`).textContent = gain > 0 ? `+${gain}` : `${gain}`;
-    document.getElementById(`damage-${i}`).textContent =
-      enabled ? damage(state.attack, current, state.buff) : "—";
+    const maxDamage = enabled ? damage(state.attack, current, state.buff) : null;
+    document.getElementById(`damage-${i}`).textContent = maxDamage ?? "—";
+    const hp = state.maxHp[i];
+    // 最大HPが未入力のときは判定しない。ちょうど同値の場合も赤くする。
+    const lethal = maxDamage !== null && hp !== null && maxDamage >= hp;
+    const damagePanel = document.getElementById(`damage-panel-${i}`);
+    damagePanel.classList.toggle("damage-lethal", lethal);
+    damagePanel.setAttribute("aria-label", `${PARTY_NAMES[i]}の通常攻撃最大ダメージ：${maxDamage ?? "未計算"}${lethal ? "。最大HP以上のため警告" : ""}`);
     const box = document.getElementById(`gain-box-${i}`);
     box.classList.toggle("gain-positive", gain > 0);
     box.classList.toggle("gain-negative", gain < 0);
@@ -228,8 +275,7 @@ function render() {
   document.getElementById("buff-off").setAttribute("aria-pressed", String(!state.buff));
   document.getElementById("buff-on").setAttribute("aria-pressed", String(state.buff));
   document.querySelectorAll("[data-party-action]").forEach(button => {
-    const action = button.dataset.partyAction;
-    button.disabled = action !== "reset" && state.initial.every(v => v === null);
+    button.disabled = state.initial.every(v => v === null);
   });
 }
 
@@ -268,7 +314,6 @@ function connectActions() {
     const btn = e.target.closest("button[data-party-action]");
     if (!btn) return;
     applyAction(btn.dataset.partyAction, [0,1,2,3]);
-    if (btn.dataset.partyAction === "reset") showToast("全員の上昇量を0にしました");
   });
   document.getElementById("buff-off").addEventListener("click", () => {
     state.buff = false;saveState();render();
@@ -295,7 +340,13 @@ function connectActions() {
     state.gains = [0,0,0,0];
     state.attack = DEFAULT_ATTACK;
     state.buff = false;
-    // 表示/非表示の絞り込みと初期守備力はリセット対象外。
+    // 最大HPはリセットするが、絞り込みと初期守備力は保持する。
+    state.maxHp = [null, null, null, null];
+    PARTY_NAMES.forEach((_, i) => {
+      const hpInput = document.getElementById(`max-hp-${i}`);
+      hpInput.value = "";
+      hpInput.setCustomValidity("");
+    });
     attackInput.value = DEFAULT_ATTACK;
     saveState();render();
     showToast("データをリセットしました（表示設定・初期守備力は保持）");
@@ -320,5 +371,5 @@ if (typeof document !== "undefined") {
 
 // テスト用：ブラウザ公開を必要としない純粋関数を検証できる。
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { clampGain, nextGain, damage, integerOrNull };
+  module.exports = { clampGain, nextGain, damage, integerOrNull, hpOrNull };
 }

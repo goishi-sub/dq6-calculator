@@ -11,8 +11,8 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./style.css?v=6">
-  <script src="./app.js?v=6" defer></script>
+  <link rel="stylesheet" href="./style.css?v=7">
+  <script src="./app.js?v=7" defer></script>
   <title>DQ6 守備力計算</title>
 </head>
 <body>
@@ -25,7 +25,7 @@
           <h1>守備力・ダメージ計算</h1>
         </div>
       </div>
-      <button id="reset-all-settings" class="btn btn-reset-app" type="button" aria-label="上昇量、敵の攻撃力、バイキルトをリセット。キャラクターの表示設定と初期守備力は保持します">
+      <button id="reset-all-settings" class="btn btn-reset-app" type="button" aria-label="上昇量、敵の攻撃力、バイキルトと最大HPをリセット。キャラクターの表示設定と初期守備力は保持します">
         <span aria-hidden="true">↺</span> データリセット
       </button>
     </header>
@@ -49,7 +49,6 @@
         <div class="party-actions-buttons">
           <button type="button" class="btn spell-lucanan" data-party-action="lucanan">ルカナン <span>全員 −1/4</span></button>
           <button type="button" class="btn spell-scrult" data-party-action="scrult">スクルト <span>全員 +1/4</span></button>
-          <button type="button" class="btn spell-reset" data-party-action="reset">上昇量リセット <span>全員を0に</span></button>
         </div>
       </section>
 
@@ -66,7 +65,7 @@
       <section class="setup-section" aria-labelledby="setup-heading">
         <p class="eyebrow">PRE-BATTLE SETTINGS</p>
         <h2 id="setup-heading">事前設定</h2>
-        <p class="setup-note">敵の攻撃力と各キャラクターの初期守備力を入力します。</p>
+        <p class="setup-note">敵の攻撃力・各キャラクターの初期守備力・最大HPを入力します。</p>
         <div class="setup-panel attack-panel">
           <label for="attack-value">敵の攻撃力</label>
           <input id="attack-value" type="number" min="0" max="9999" step="1" value="410" inputmode="numeric" aria-label="敵の攻撃力">
@@ -75,6 +74,11 @@
         <div class="setup-panel">
           <h3 class="setup-panel-title">初期守備力 <span>4人分まとめて入力</span></h3>
           <div id="initial-inputs" class="initial-inputs"></div>
+        </div>
+        <div class="setup-panel" aria-labelledby="hp-heading">
+          <h3 class="setup-panel-title" id="hp-heading">最大HP <span>4人分まとめて入力 · 未入力可</span></h3>
+          <p class="hp-help">最大ダメージが最大HP以上のキャラクターは、ダメージの数値が赤くなります。</p>
+          <div id="max-hp-inputs" class="initial-inputs hp-inputs"></div>
         </div>
         <div class="setup-panel visibility-panel" aria-labelledby="visibility-heading">
           <div class="visibility-heading-row">
@@ -96,10 +100,11 @@
             <p><strong>ルカナン：</strong>初期守備力÷4を切り捨てて減算。<strong>スカラ：</strong>初期守備力÷2を切り捨てて加算。<strong>スクルト：</strong>初期守備力÷4を切り捨てて全員に加算。</p>
             <p><strong>ダメージ計算に用いる現在守備力：</strong>初期守備力＋上昇量（最低0）。内部計算にのみ使用。</p>
             <p><strong>通常攻撃の最大ダメージ：</strong>A＝敵の攻撃力、B＝現在守備力、X＝A−⌊B/2⌋、D＝⌊X/2⌋。① X≦1のとき最大1。② D≦⌊A/16⌋のとき最大⌊A/16⌋。③ それ以外は最大D＋⌊D/16⌋＋1。整数除算では端数を切り捨て。</p>
-            <p><strong>バイキルト：</strong>通常攻撃の最大ダメージを算出した後で2倍。痛恨・特殊行動・防御・耐性補正は対象外。</p>
+            <p><strong>バイキルト：</strong>通常攻撃の最大ダメージを算出した後で2倍。「あり」選択中は赤色。痛恨・特殊行動・防御・耐性補正は対象外。</p>
+            <p><strong>最大HPによる警告：</strong>最大HP（1～9999）を入力すると、通常攻撃の最大ダメージが最大HP以上のとき数値を赤く表示します。同値も警告対象です。最大HPが未入力の場合は緑色のままです。HPはダメージ計算式には影響しません。</p>
             <p><strong>計算資料：</strong><a href="https://gcgx.games/dq6/damage.html" target="_blank" rel="noopener noreferrer">SFC版DQ6 通常攻撃の分岐</a> ／ <a href="https://game.kuneo.org/dq6/20140108_dq6rta_kuneo.pdf" target="_blank" rel="noopener noreferrer">DQ6 RTA資料（通常範囲の乱数幅）</a>。公開資料をもとに実装。ROM内部の丸め処理まで完全一致するかは実機未検証です。</p>
             <p><strong>キャラクター表示設定：</strong>表示中の人数によってカードが横幅いっぱいに広がります。非表示中もデータを保持し、全体操作の効果は非表示中のキャラクターにも適用されます。4人とも非表示にすることもできます。</p>
-            <p><strong>データリセット：</strong>全員の上昇量を0、敵の攻撃力を410、バイキルトを「なし」に戻します。初期守備力とキャラクターの表示・非表示設定は保持します。個別リセット・全体の上昇量リセットでは攻撃力とバイキルトは変化しません。</p>
+            <p><strong>データリセット：</strong>全員の上昇量を0、敵の攻撃力を410、バイキルトを「なし」に戻し、最大HP欄を空欄にします。初期守備力とキャラクターの表示・非表示設定は保持します。個別リセットでは攻撃力とバイキルトは変化しません。</p>
             <p>入力した設定はこの端末のブラウザ内に保存されます。データ削除やブラウザ設定によって消えることがあります。</p>
           </div>
         </details>
