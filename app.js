@@ -122,9 +122,6 @@ function cardTemplate(name, i) {
       <div class="metric gain-metric" id="gain-box-${i}">
         <small>初期値からの変化</small><strong id="gain-${i}">0</strong>
       </div>
-      <div class="damage-box">
-        <span>通常攻撃・最大ダメージ</span><strong id="damage-${i}">—</strong>
-      </div>
       <div class="spell-grid">
         <button class="btn spell-lucanan" type="button" data-action="lucanan" data-index="${i}">ルカナン</button>
         <button class="btn spell-scala" type="button" data-action="scala" data-index="${i}">スカラ</button>
@@ -132,6 +129,13 @@ function cardTemplate(name, i) {
       </div>
     </div>
   </article>`;
+}
+
+/** カードとは独立した最大ダメージ欄。表示人数に応じてカードと同じ列幅にする。 */
+function damageTemplate(name, i) {
+  return `<div class="damage-box" id="damage-panel-${i}" role="group" aria-label="${name}の通常攻撃最大ダメージ">
+    <span>通常攻撃・最大ダメージ</span><strong id="damage-${i}">—</strong>
+  </div>`;
 }
 
 /** 初期守備力は画面下部の事前設定に集約する。 */
@@ -155,6 +159,7 @@ function visibilityToggleTemplate(name, i) {
 
 function buildCards() {
   document.getElementById("party-cards").innerHTML = PARTY_NAMES.map(cardTemplate).join("");
+  document.getElementById("damage-grid").innerHTML = PARTY_NAMES.map(damageTemplate).join("");
   document.getElementById("initial-inputs").innerHTML = PARTY_NAMES.map(initialInputTemplate).join("");
   document.getElementById("visibility-toggles").innerHTML = PARTY_NAMES.map(visibilityToggleTemplate).join("");
   PARTY_NAMES.forEach((_, i) => {
@@ -187,11 +192,15 @@ function render() {
   const visibleCount = state.visible.filter(Boolean).length;
   const grid = document.getElementById("party-cards");
   grid.dataset.visibleCount = String(visibleCount);
+  const damageGrid = document.getElementById("damage-grid");
+  damageGrid.dataset.visibleCount = String(visibleCount);
+  document.querySelector(".damage-section").hidden = visibleCount === 0;
   document.getElementById("visible-count").textContent = `${visibleCount} / 4 人表示中`;
   document.getElementById("party-empty").hidden = visibleCount !== 0;
   PARTY_NAMES.forEach((_, i) => {
     // DOM要素は破棄しないため、非表示中の値やイベントも維持される。
     document.getElementById(`character-${i}`).hidden = !state.visible[i];
+    document.getElementById(`damage-panel-${i}`).hidden = !state.visible[i];
     const toggle = document.querySelector(`[data-visibility-index="${i}"]`);
     toggle.classList.toggle("is-visible", state.visible[i]);
     toggle.classList.toggle("is-hidden", !state.visible[i]);

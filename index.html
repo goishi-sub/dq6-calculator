@@ -11,8 +11,8 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./style.css?v=5">
-  <script src="./app.js?v=5" defer></script>
+  <link rel="stylesheet" href="./style.css?v=6">
+  <script src="./app.js?v=6" defer></script>
   <title>DQ6 守備力計算</title>
 </head>
 <body>
@@ -32,9 +32,14 @@
 
     <main>
       <div class="battle-area">
-      <section class="party-section" aria-label="キャラクター別の上昇量と最大ダメージ">
-        <div id="party-cards" class="party-grid" data-visible-count="4" aria-label="キャラクターの上昇量・最大ダメージ"></div>
+      <section class="party-section" aria-label="キャラクター別の上昇量と個別操作">
+        <div id="party-cards" class="party-grid" data-visible-count="4" aria-label="キャラクターの上昇量・個別操作"></div>
         <p id="party-empty" class="party-empty" hidden>表示中のキャラクターがいません。画面下部の「キャラクター表示設定」から表示できます。</p>
+      </section>
+
+      <!-- 最大ダメージは個別操作の直下、全体操作の直前に表示。人数に応じて横幅も追従する。 -->
+      <section class="damage-section" aria-label="キャラクター別の通常攻撃・最大ダメージ">
+        <div id="damage-grid" class="damage-grid" data-visible-count="4"></div>
       </section>
 
       <section class="party-actions action-bar" aria-label="全員に実行する操作">
