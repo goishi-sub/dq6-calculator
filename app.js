@@ -340,16 +340,10 @@ function connectActions() {
     state.gains = [0,0,0,0];
     state.attack = DEFAULT_ATTACK;
     state.buff = false;
-    // 最大HPはリセットするが、絞り込みと初期守備力は保持する。
-    state.maxHp = [null, null, null, null];
-    PARTY_NAMES.forEach((_, i) => {
-      const hpInput = document.getElementById(`max-hp-${i}`);
-      hpInput.value = "";
-      hpInput.setCustomValidity("");
-    });
+    // 初期守備力・最大HP・キャラ表示設定はすべて保持する。
     attackInput.value = DEFAULT_ATTACK;
     saveState();render();
-    showToast("データをリセットしました（表示設定・初期守備力は保持）");
+    showToast("データをリセットしました（初期守備力・最大HP・表示設定は保持）");
   });
 }
 

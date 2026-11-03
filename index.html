@@ -11,8 +11,8 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./style.css?v=7">
-  <script src="./app.js?v=7" defer></script>
+  <link rel="stylesheet" href="./style.css?v=8">
+  <script src="./app.js?v=8" defer></script>
   <title>DQ6 守備力計算</title>
 </head>
 <body>
@@ -25,7 +25,7 @@
           <h1>守備力・ダメージ計算</h1>
         </div>
       </div>
-      <button id="reset-all-settings" class="btn btn-reset-app" type="button" aria-label="上昇量、敵の攻撃力、バイキルトと最大HPをリセット。キャラクターの表示設定と初期守備力は保持します">
+      <button id="reset-all-settings" class="btn btn-reset-app" type="button" aria-label="上昇量、敵の攻撃力、バイキルトをリセット。初期守備力、最大HP、キャラクター表示設定は保持します">
         <span aria-hidden="true">↺</span> データリセット
       </button>
     </header>
@@ -104,7 +104,7 @@
             <p><strong>最大HPによる警告：</strong>最大HP（1～9999）を入力すると、通常攻撃の最大ダメージが最大HP以上のとき数値を赤く表示します。同値も警告対象です。最大HPが未入力の場合は緑色のままです。HPはダメージ計算式には影響しません。</p>
             <p><strong>計算資料：</strong><a href="https://gcgx.games/dq6/damage.html" target="_blank" rel="noopener noreferrer">SFC版DQ6 通常攻撃の分岐</a> ／ <a href="https://game.kuneo.org/dq6/20140108_dq6rta_kuneo.pdf" target="_blank" rel="noopener noreferrer">DQ6 RTA資料（通常範囲の乱数幅）</a>。公開資料をもとに実装。ROM内部の丸め処理まで完全一致するかは実機未検証です。</p>
             <p><strong>キャラクター表示設定：</strong>表示中の人数によってカードが横幅いっぱいに広がります。非表示中もデータを保持し、全体操作の効果は非表示中のキャラクターにも適用されます。4人とも非表示にすることもできます。</p>
-            <p><strong>データリセット：</strong>全員の上昇量を0、敵の攻撃力を410、バイキルトを「なし」に戻し、最大HP欄を空欄にします。初期守備力とキャラクターの表示・非表示設定は保持します。個別リセットでは攻撃力とバイキルトは変化しません。</p>
+            <p><strong>データリセット：</strong>全員の上昇量を0、敵の攻撃力を410、バイキルトを「なし」に戻します。初期守備力・最大HP・キャラクターの表示・非表示設定は保持します。個別リセットでは攻撃力とバイキルトは変化しません。</p>
             <p>入力した設定はこの端末のブラウザ内に保存されます。データ削除やブラウザ設定によって消えることがあります。</p>
           </div>
         </details>
