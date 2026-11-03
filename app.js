@@ -130,7 +130,7 @@ function cardTemplate(name, i) {
     </header>
     <div class="character-body">
       <div class="metric gain-metric" id="gain-box-${i}">
-        <small>初期値からの変化</small><strong id="gain-${i}">0</strong>
+        <small>守備力上昇量</small><strong id="gain-${i}">0</strong>
       </div>
       <div class="spell-grid">
         <button class="btn spell-lucanan" type="button" data-action="lucanan" data-index="${i}">ルカナン</button>
@@ -264,7 +264,7 @@ function render() {
     damagePanel.classList.toggle("damage-lethal", lethal);
     damagePanel.setAttribute("aria-label", `${PARTY_NAMES[i]}の通常攻撃最大ダメージ：${maxDamage ?? "未計算"}${lethal ? "。最大HP以上のため警告" : ""}`);
     const box = document.getElementById(`gain-box-${i}`);
-    box.classList.toggle("gain-positive", gain > 0);
+    box.classList.toggle("gain-positive", gain === MAX_GAIN);
     box.classList.toggle("gain-negative", gain < 0);
     document.querySelectorAll(`[data-action][data-index="${i}"]`).forEach(button => {
       button.disabled = !enabled && button.dataset.action !== "reset";
